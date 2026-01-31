@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC26 Preparation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f1f5f9;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 1.25rem;
+        }
+
+        .nav-active { color: #38bdf8; transform: translateY(-3px); text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: slideUp 0.3s ease-out; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Premium Popup Styles */
+        #telegramPopup {
+            animation: fadeIn 0.4s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .popup-content {
+            animation: zoomIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes zoomIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .board-chip {
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #64748b;
+        }
+        .board-chip.added { border-color: #334155; color: #94a3b8; }
+        .board-chip.completed {
+            background: #0ea5e9;
+            color: white;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 10px rgba(14, 165, 233, 0.3);
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .sub-icon-box {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(56, 189, 248, 0.15);
+            border-radius: 14px;
+            margin: 0 auto 12px;
+            color: #38bdf8;
+        }
+        .sub-icon-box i {
+            font-size: 24px;
+        }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen pb-28 text-slate-200">
+
+    <!-- Telegram Premium Popup (Always Visible on Start) -->
+    <div id="telegramPopup" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-6">
+        <div class="glass-card popup-content p-8 w-full max-w-sm text-center border-sky-500/30 shadow-2xl shadow-sky-500/20">
+            <div class="w-20 h-20 bg-sky-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-sky-500/40">
+                <i class="fab fa-telegram-plane text-4xl text-sky-400"></i>
+            </div>
+            <h2 class="text-2xl font-black text-white mb-2 italic">SB Focus Elite</h2>
+            <p class="text-slate-400 text-sm mb-8 leading-relaxed">
+                SSC 2026-এর সেরা গাইডলাইন এবং এক্সক্লুসিভ নোটস পেতে এখনই আমাদের টেলিগ্রাম কমিউনিটিতে যোগ দিন!
+            </p>
+            <div class="space-y-3">
+                <a href="https://t.me/SB_Focus" target="_blank" onclick="closeTelegramPopup()" class="block w-full bg-sky-500 hover:bg-sky-400 py-4 rounded-xl font-bold text-white shadow-lg shadow-sky-500/25 transition-all active:scale-95">
+                    Join Channel
+                </a>
+                <button onclick="closeTelegramPopup()" class="w-full py-3 text-slate-500 text-xs font-bold hover:text-slate-300 transition-colors uppercase tracking-[0.2em]">
+                    Dismiss
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header & Timer -->
+    <div class="sticky top-0 z-50 p-4 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <h1 class="text-[10px] uppercase tracking-[0.3em] text-sky-400 font-black mb-3">Time Left for SSC 2026</h1>
+            <div id="timer" class="flex justify-center gap-4">
+                <div class="text-center"><span id="days" class="text-2xl font-black block text-white">00</span><span class="text-[8px] text-slate-500 uppercase">Days</span></div>
+                <div class="text-center font-bold text-sky-500 text-xl">:</div>
+                <div class="text-center"><span id="hours" class="text-2xl font-black block text-white">00</span><span class="text-[8px] text-slate-500 uppercase">Hours</span></div>
+                <div class="text-center font-bold text-sky-500 text-xl">:</div>
+                <div class="text-center"><span id="mins" class="text-2xl font-black block text-white">00</span><span class="text-[8px] text-slate-500 uppercase">Mins</span></div>
+                <div class="text-center font-bold text-sky-500 text-xl">:</div>
+                <div class="text-center"><span id="secs" class="text-2xl font-black block text-sky-400">00</span><span class="text-[8px] text-slate-500 uppercase">Secs</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-xl mx-auto px-6 mt-6">
+        
+        <!-- DASHBOARD (Home Page) -->
+        <section id="progressPage" class="page-section active">
+            <div class="mb-8">
+                <h2 class="text-2xl font-extrabold">Hello, <span id="displayUserName" class="text-sky-400">Student</span></h2>
+                <p class="text-slate-400 text-sm">Targeting SSC 2026 Perfection</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-6">
+                <div class="glass-card p-5 flex flex-col items-center">
+                    <div class="relative w-24 h-24 mb-3">
+                        <svg class="w-full h-full">
+                            <circle cx="48" cy="48" r="40" stroke="#1e293b" stroke-width="6" fill="transparent" />
+                            <circle id="overallCircle" cx="48" cy="48" r="40" stroke="#0ea5e9" stroke-width="6" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="progress-ring" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-white" id="overallText">0%</div>
+                    </div>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider text-center">Master Progress<br>(Full Syllabus)</span>
+                </div>
+                <div class="glass-card p-5 flex flex-col items-center">
+                    <div class="relative w-24 h-24 mb-3">
+                        <svg class="w-full h-full">
+                            <circle cx="48" cy="48" r="40" stroke="#1e293b" stroke-width="6" fill="transparent" />
+                            <circle id="taskCircle" cx="48" cy="48" r="40" stroke="#10b981" stroke-width="6" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" class="progress-ring" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-lg text-white" id="taskText">0%</div>
+                    </div>
+                    <span class="text-[10px] uppercase font-bold text-slate-500 tracking-wider">Daily Goals</span>
+                </div>
+            </div>
+
+            <h3 class="font-bold text-sm mb-4 text-slate-400 flex items-center gap-2">
+                <i class="fas fa-chart-line text-sky-400"></i> Subject-wise Status
+            </h3>
+            <div id="dashboardSubjectList" class="space-y-3"></div>
+        </section>
+
+        <!-- SYLLABUS PAGE -->
+        <section id="completedPage" class="page-section">
+            <div id="subjectListView">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-xl font-bold">Your Subjects</h2>
+                    <button onclick="toggleSubjectModal()" class="bg-sky-500/10 text-sky-400 border border-sky-500/20 px-4 py-2 rounded-xl text-xs font-bold">Edit List</button>
+                </div>
+                <div id="subjectGrid" class="grid grid-cols-2 gap-4"></div>
+            </div>
+
+            <div id="chapterListView" class="hidden">
+                <button onclick="backToSubjects()" class="mb-4 text-sky-400 text-sm flex items-center gap-2"><i class="fas fa-arrow-left"></i> Back to Subjects</button>
+                <div class="flex justify-between items-center mb-6">
+                    <div class="flex items-center gap-3">
+                        <div id="currentSubIcon" class="w-10 h-10 flex items-center justify-center bg-sky-500/10 rounded-lg text-sky-400"></div>
+                        <h2 id="currentSubjectTitle" class="text-2xl font-bold text-white"></h2>
+                    </div>
+                    <button onclick="addNewChapter()" class="bg-sky-500 text-white px-3 py-1.5 rounded-lg text-[10px] font-bold">Add Chapter</button>
+                </div>
+                <div id="chapterAccordion" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <!-- GOALS & HISTORY PAGE -->
+        <section id="dailyPage" class="page-section">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Daily Goals</h2>
+                <div class="flex bg-slate-900 p-1 rounded-lg">
+                    <button onclick="toggleGoalView('active')" id="btn-active-goals" class="px-3 py-1 text-[10px] font-bold rounded-md bg-sky-500 text-white">Active</button>
+                    <button onclick="toggleGoalView('history')" id="btn-history-goals" class="px-3 py-1 text-[10px] font-bold rounded-md text-slate-500">History</button>
+                </div>
+            </div>
+
+            <div id="activeGoalView">
+                <div class="glass-card p-4 mb-6">
+                    <div class="flex gap-2">
+                        <input type="text" id="taskInput" placeholder="Write a goal for today..." class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-4 py-2 text-sm outline-none focus:border-sky-500">
+                        <button onclick="addTask()" class="bg-sky-500 px-4 rounded-lg font-bold text-sm text-white">Add</button>
+                    </div>
+                </div>
+                <div id="taskList" class="space-y-3"></div>
+            </div>
+
+            <div id="historyGoalView" class="hidden">
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-[10px] text-slate-500 uppercase font-bold">Completed Missions</span>
+                    <button onclick="clearHistory()" class="text-red-400 text-[10px] font-bold">Clear All</button>
+                </div>
+                <div id="historyList" class="space-y-3"></div>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Modals -->
+    <div id="nameModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950 px-4 hidden">
+        <div class="glass-card p-8 w-full max-w-sm text-center">
+            <h2 class="text-2xl font-bold mb-6">Welcome to SSC26 Preparation</h2>
+            <input type="text" id="nameIn" placeholder="Enter your name" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4 outline-none text-white focus:border-sky-500">
+            <button onclick="saveName()" class="w-full bg-sky-500 py-4 rounded-xl font-bold text-white shadow-lg shadow-sky-500/20">Let's Start</button>
+        </div>
+    </div>
+
+    <div id="subSelectModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 px-4 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-lg font-bold mb-4">Select Your Subjects</h2>
+            <div id="subOptions" class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto pr-2"></div>
+            <button onclick="toggleSubjectModal()" class="w-full mt-4 bg-sky-500 py-3 rounded-lg text-sm font-bold text-white">Save Selection</button>
+        </div>
+    </div>
+
+    <div id="boardSelectorModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 px-4 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h3 class="font-bold mb-4 text-center text-sky-400">Select Board</h3>
+            <div id="boardYearGrid" class="grid grid-cols-3 gap-3 max-h-60 overflow-y-auto p-2"></div>
+            <button onclick="closeBoardSelector()" class="w-full mt-6 bg-slate-800 py-3 rounded-xl font-bold text-sm text-white">Save & Close</button>
+        </div>
+    </div>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-950 border-t border-slate-800 p-4 flex justify-around items-center z-50">
+        <button onclick="switchTab('progress')" id="btn-progress" class="nav-active flex flex-col items-center"><i class="fas fa-th-large text-lg"></i><span class="text-[8px] mt-1 font-bold">Home</span></button>
+        <button onclick="switchTab('completed')" id="btn-completed" class="flex flex-col items-center"><i class="fas fa-book-open text-lg"></i><span class="text-[8px] mt-1 font-bold">Syllabus</span></button>
+        <button onclick="switchTab('daily')" id="btn-daily" class="flex flex-col items-center"><i class="fas fa-check-circle text-lg"></i><span class="text-[8px] mt-1 font-bold">Goals</span></button>
+    </nav>
+
+    <script>
+        const EXAM_DATE = new Date("April 21, 2026 10:00:00").getTime();
+        
+        const SUBJECT_DATA = {
+            "Physics": { icon: "fas fa-ruler-combined" }, "Chemistry": { icon: "fas fa-flask" },
+            "Biology": { icon: "fas fa-dna" }, "General Math": { icon: "fas fa-calculator" },
+            "Higher Math": { icon: "fas fa-infinity" }, "English 1st": { icon: "fas fa-font" },
+            "English 2nd": { icon: "fas fa-spell-check" }, "Bangla 1st": { icon: "fas fa-language" },
+            "Bangla 2nd": { icon: "fas fa-pen-nib" }, "ICT": { icon: "fas fa-microchip" },
+            "BGS": { icon: "fas fa-globe-asia" }, "Religion": { icon: "fas fa-pray" }
+        };
+
+        const AUTO_BOARDS = ["SSC 16", "SSC 17", "SSC 18", "SSC 19", "SSC 20", "SSC 21", "SSC 22", "SSC 23", "SSC 24", "SSC 25", "SSC 26"];
+
+        let state = {
+            name: localStorage.getItem('ssc26_name'),
+            subs: JSON.parse(localStorage.getItem('ssc26_subs')) || [],
+            chapters: JSON.parse(localStorage.getItem('ssc26_chaps')) || {},
+            progress: JSON.parse(localStorage.getItem('ssc26_prog')) || {},
+            tasks: JSON.parse(localStorage.getItem('ssc26_tasks')) || [],
+            history: JSON.parse(localStorage.getItem('ssc26_history')) || [],
+            lastResetDate: localStorage.getItem('ssc26_lastReset') || ""
+        };
+
+        window.onload = () => {
+            checkMidnightReset();
+            if(!state.name) {
+                document.getElementById('nameModal').classList.remove('hidden');
+            } else {
+                document.getElementById('displayUserName').innerText = state.name;
+                init();
+            }
+            startTimer();
+        };
+
+        function closeTelegramPopup() {
+            const popup = document.getElementById('telegramPopup');
+            popup.style.opacity = '0';
+            setTimeout(() => popup.style.display = 'none', 400);
+        }
+
+        function checkMidnightReset() {
+            const today = new Date().toLocaleDateString();
+            if (state.lastResetDate !== today && state.lastResetDate !== "") {
+                const yesterday = state.lastResetDate;
+                const completed = state.tasks.filter(t => t.done);
+                if(completed.length > 0) {
+                    state.history.unshift({ date: yesterday, items: completed.map(c => c.text) });
+                }
+                state.tasks = state.tasks.filter(t => !t.done);
+                state.lastResetDate = today;
+                saveState();
+            } else if (state.lastResetDate === "") {
+                state.lastResetDate = today;
+                saveState();
+            }
+        }
+
+        function saveName() {
+            const n = document.getElementById('nameIn').value.trim();
+            if(n) {
+                state.name = n;
+                localStorage.setItem('ssc26_name', n);
+                document.getElementById('nameModal').classList.add('hidden');
+                document.getElementById('displayUserName').innerText = n;
+                init();
+            }
+        }
+
+        function init() {
+            renderSubGrid();
+            renderTaskList();
+            renderHistoryList();
+            updateAllStats();
+        }
+
+        function startTimer() {
+            const updateTimer = () => {
+                const now = Date.now();
+                const diff = EXAM_DATE - now;
+                if (diff <= 0) return;
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+                document.getElementById('days').innerText = String(d).padStart(2, '0');
+                document.getElementById('hours').innerText = String(h).padStart(2, '0');
+                document.getElementById('mins').innerText = String(m).padStart(2, '0');
+                document.getElementById('secs').innerText = String(s).padStart(2, '0');
+            };
+            updateTimer(); setInterval(updateTimer, 1000);
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById(`${t}Page`).classList.add('active');
+            document.getElementById(`btn-${t}`).classList.add('nav-active');
+            if(t === 'progress') updateAllStats();
+            if(t === 'completed') {
+                document.getElementById('subjectListView').classList.remove('hidden');
+                document.getElementById('chapterListView').classList.add('hidden');
+            }
+        }
+
+        function toggleGoalView(view) {
+            const btnActive = document.getElementById('btn-active-goals');
+            const btnHistory = document.getElementById('btn-history-goals');
+            const activeDiv = document.getElementById('activeGoalView');
+            const historyDiv = document.getElementById('historyGoalView');
+            if(view === 'active') {
+                activeDiv.classList.remove('hidden');
+                historyDiv.classList.add('hidden');
+                btnActive.classList.add('bg-sky-500', 'text-white');
+                btnActive.classList.remove('text-slate-500');
+                btnHistory.classList.remove('bg-sky-500', 'text-white');
+                btnHistory.classList.add('text-slate-500');
+            } else {
+                activeDiv.classList.add('hidden');
+                historyDiv.classList.remove('hidden');
+                btnHistory.classList.add('bg-sky-500', 'text-white');
+                btnHistory.classList.remove('text-slate-500');
+                btnActive.classList.remove('bg-sky-500', 'text-white');
+                btnActive.classList.add('text-slate-500');
+                renderHistoryList();
+            }
+        }
+
+        function toggleSubjectModal() {
+            const modal = document.getElementById('subSelectModal');
+            if(modal.classList.contains('hidden')) {
+                renderSubOptions();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+                renderSubGrid();
+                updateAllStats();
+            }
+        }
+
+        function renderSubOptions() {
+            const container = document.getElementById('subOptions');
+            container.innerHTML = Object.keys(SUBJECT_DATA).map(s => `
+                <button onclick="toggleSubSelection('${s}')" class="p-3 text-[10px] rounded-xl border ${state.subs.includes(s) ? 'bg-sky-500/20 border-sky-500 text-sky-400 font-bold' : 'bg-slate-900 border-slate-800 text-slate-500'}">${s}</button>
+            `).join('');
+        }
+
+        function toggleSubSelection(s) {
+            if(state.subs.includes(s)) state.subs = state.subs.filter(x => x !== s);
+            else state.subs.push(s);
+            saveState(); 
+            renderSubOptions();
+        }
+
+        function renderSubGrid() {
+            const g = document.getElementById('subjectGrid');
+            if(state.subs.length === 0) {
+                g.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500 text-xs italic">No subjects selected. Click 'Edit List' to add.</div>`;
+                return;
+            }
+            g.innerHTML = state.subs.map(s => `
+                <div onclick="openSubject('${s}')" class="glass-card p-5 text-center cursor-pointer hover:border-sky-500/50 transition-all active:scale-95">
+                    <div class="sub-icon-box"><i class="${SUBJECT_DATA[s].icon}"></i></div>
+                    <div class="text-[11px] font-bold text-white uppercase tracking-wider">${s}</div>
+                </div>
+            `).join('');
+        }
+
+        let activeSub = '';
+        function openSubject(s) {
+            activeSub = s;
+            document.getElementById('subjectListView').classList.add('hidden');
+            document.getElementById('chapterListView').classList.remove('hidden');
+            document.getElementById('currentSubjectTitle').innerText = s;
+            document.getElementById('currentSubIcon').innerHTML = `<i class="${SUBJECT_DATA[s].icon} text-xl"></i>`;
+            renderChapters();
+        }
+
+        function backToSubjects() {
+            document.getElementById('subjectListView').classList.remove('hidden');
+            document.getElementById('chapterListView').classList.add('hidden');
+            updateAllStats();
+        }
+
+        function renderChapters() {
+            const container = document.getElementById('chapterAccordion');
+            const chaps = state.chapters[activeSub] || [];
+            if(chaps.length === 0) {
+                container.innerHTML = `<div class="text-center p-8 text-slate-600 text-xs italic">No chapters added yet.</div>`;
+                return;
+            }
+            container.innerHTML = chaps.map(c => {
+                const prog = state.progress[`${activeSub}_${c.id}`] || { basics: false, mcq: false, boards: {} };
+                const boardsList = Object.keys(prog.boards || {});
+                return `
+                <div class="glass-card overflow-hidden mb-4">
+                    <div class="p-4 bg-slate-900 flex justify-between items-center border-b border-slate-800">
+                        <span class="font-bold text-sm text-sky-100">${c.title}</span>
+                        <button onclick="deleteChap(${c.id})" class="text-slate-600 hover:text-red-400"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400 italic">Concept / Basics Clear</span>
+                            <div onclick="toggleStep(${c.id}, 'basics')" class="w-6 h-6 rounded-md border-2 border-sky-500/30 flex items-center justify-center cursor-pointer ${prog.basics ? 'bg-sky-500 border-sky-500' : 'bg-slate-900'}">${prog.basics ? '<i class="fas fa-check text-[10px] text-white"></i>' : ''}</div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400 italic">MCQ Solve</span>
+                            <div onclick="toggleStep(${c.id}, 'mcq')" class="w-6 h-6 rounded-md border-2 border-sky-500/30 flex items-center justify-center cursor-pointer ${prog.basics ? 'bg-sky-500 border-sky-500' : 'bg-slate-900'}">${prog.mcq ? '<i class="fas fa-check text-[10px] text-white"></i>' : ''}</div>
+                        </div>
+                        <div class="pt-2 border-t border-slate-800/50">
+                            <div class="flex justify-between items-center mb-3 mt-1">
+                                <span class="text-[9px] font-black text-slate-500 uppercase tracking-wider">Boards CQ</span>
+                                <button onclick="openBoardSelector(${c.id})" class="bg-sky-500/10 text-sky-400 px-3 py-1 rounded-full text-[9px] font-bold border border-sky-500/20">+ Add / Edit</button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                ${boardsList.map(b => `
+                                    <div onclick="toggleBoardCompletion(${c.id}, '${b}')" class="board-chip px-3 py-1.5 rounded-lg text-[9px] font-black ${prog.boards[b] ? 'completed' : 'added'}">
+                                        ${b}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        let activeChapId = null;
+        function openBoardSelector(cid) {
+            activeChapId = cid;
+            renderBoardYearGrid();
+            document.getElementById('boardSelectorModal').classList.remove('hidden');
+        }
+
+        function renderBoardYearGrid() {
+            const grid = document.getElementById('boardYearGrid');
+            const key = `${activeSub}_${activeChapId}`;
+            const prog = state.progress[key] || { boards: {} };
+            
+            grid.innerHTML = AUTO_BOARDS.map(y => {
+                const isSelected = prog.boards && prog.boards[y] !== undefined;
+                return `
+                    <button onclick="toggleBoardSelection(${activeChapId}, '${y}')" 
+                            class="p-3 rounded-xl text-[10px] font-bold border transition-all ${isSelected ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-900 border-slate-800 text-slate-500'}">
+                        ${y}
+                    </button>`;
+            }).join('');
+        }
+
+        function toggleBoardSelection(cid, bname) {
+            const key = `${activeSub}_${cid}`;
+            if(!state.progress[key]) state.progress[key] = { basics: false, mcq: false, boards: {} };
+            
+            if(state.progress[key].boards[bname] !== undefined) {
+                delete state.progress[key].boards[bname];
+            } else {
+                state.progress[key].boards[bname] = false;
+            }
+            saveState(); 
+            renderBoardYearGrid();
+            renderChapters();
+        }
+
+        function closeBoardSelector() { 
+            document.getElementById('boardSelectorModal').classList.add('hidden'); 
+            updateAllStats();
+        }
+
+        function toggleBoardCompletion(cid, bname) {
+            const key = `${activeSub}_${cid}`;
+            state.progress[key].boards[bname] = !state.progress[key].boards[bname];
+            saveState(); renderChapters(); updateAllStats();
+        }
+
+        function toggleStep(cid, type) {
+            const key = `${activeSub}_${cid}`;
+            if(!state.progress[key]) state.progress[key] = { basics: false, mcq: false, boards: {} };
+            state.progress[key][type] = !state.progress[key][type];
+            saveState(); renderChapters(); updateAllStats();
+        }
+
+        function addNewChapter() {
+            const t = prompt("Enter Chapter Name:");
+            if(t) {
+                if(!state.chapters[activeSub]) state.chapters[activeSub] = [];
+                state.chapters[activeSub].push({ id: Date.now(), title: t });
+                saveState(); renderChapters();
+            }
+        }
+
+        function updateAllStats() {
+            let totalPossibleGlobal = 0, totalDoneGlobal = 0;
+            const subList = document.getElementById('dashboardSubjectList');
+            subList.innerHTML = '';
+            state.subs.forEach(s => {
+                const chaps = state.chapters[s] || [];
+                let sPossible = 0, sDone = 0;
+                chaps.forEach(c => {
+                    const p = state.progress[`${s}_${c.id}`] || { basics: false, mcq: false, boards: {} };
+                    const boardsAdded = Object.keys(p.boards || {}).length;
+                    sPossible += (2 + boardsAdded);
+                    if(p.basics) sDone++;
+                    if(p.mcq) sDone++;
+                    Object.values(p.boards || {}).forEach(v => { if(v) sDone++; });
+                });
+                totalPossibleGlobal += sPossible; totalDoneGlobal += sDone;
+                const perc = sPossible > 0 ? Math.round((sDone/sPossible)*100) : 0;
+                subList.innerHTML += `
+                    <div class="glass-card p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 flex items-center justify-center bg-sky-500/10 rounded-lg"><i class="${SUBJECT_DATA[s].icon} text-sky-400 text-[12px]"></i></div>
+                            <span class="text-[11px] font-bold text-slate-300 uppercase">${s}</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] font-black text-sky-400">${perc}%</span>
+                            <div class="w-20 h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                                <div class="bg-sky-500 h-full" style="width:${perc}%"></div>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            const overall = totalPossibleGlobal > 0 ? Math.round((totalDoneGlobal/totalPossibleGlobal)*100) : 0;
+            document.getElementById('overallText').innerText = overall + '%';
+            document.getElementById('overallCircle').style.strokeDashoffset = 251.2 - (overall/100)*251.2;
+            const tDone = state.tasks.filter(x => x.done).length;
+            const tPerc = state.tasks.length > 0 ? Math.round((tDone/state.tasks.length)*100) : 0;
+            document.getElementById('taskText').innerText = tPerc + '%';
+            document.getElementById('taskCircle').style.strokeDashoffset = 251.2 - (tPerc/100)*251.2;
+        }
+
+        function addTask() {
+            const val = document.getElementById('taskInput').value.trim();
+            if(val) {
+                state.tasks.push({ id: Date.now(), text: val, done: false });
+                document.getElementById('taskInput').value = '';
+                saveState(); renderTaskList(); updateAllStats();
+            }
+        }
+        function toggleTask(tid) {
+            const t = state.tasks.find(x => x.id === tid);
+            if(t) t.done = !t.done;
+            saveState(); renderTaskList(); updateAllStats();
+        }
+        function deleteTask(tid) {
+            state.tasks = state.tasks.filter(t => t.id !== tid);
+            saveState(); renderTaskList(); updateAllStats();
+        }
+        function renderTaskList() {
+            const container = document.getElementById('taskList');
+            if(state.tasks.length === 0) container.innerHTML = '<div class="text-center p-8 text-slate-600 text-xs italic">No goals set for today.</div>';
+            else container.innerHTML = state.tasks.map(t => `
+                <div class="glass-card p-4 flex items-center justify-between">
+                    <div class="flex items-center gap-3 cursor-pointer flex-1" onclick="toggleTask(${t.id})">
+                        <div class="w-5 h-5 rounded-full border-2 border-emerald-500/50 flex items-center justify-center ${t.done ? 'bg-emerald-500 border-emerald-500' : ''}">
+                            ${t.done ? '<i class="fas fa-check text-[8px] text-white"></i>' : ''}
+                        </div>
+                        <span class="text-sm ${t.done ? 'line-through text-slate-500' : 'text-slate-200 font-medium'}">${t.text}</span>
+                    </div>
+                    <button onclick="deleteTask(${t.id})" class="text-slate-700 hover:text-red-400"><i class="fas fa-trash text-xs"></i></button>
+                </div>`).join('');
+        }
+
+        function renderHistoryList() {
+            const container = document.getElementById('historyList');
+            if(state.history.length === 0) container.innerHTML = '<div class="text-center p-8 text-slate-600 text-xs italic">History is empty.</div>';
+            else container.innerHTML = state.history.map(h => `
+                <div class="glass-card p-4 border-l-4 border-emerald-500/50 mb-3">
+                    <div class="text-[9px] font-black text-sky-400 uppercase tracking-tighter mb-2">${h.date}</div>
+                    <div class="space-y-1">
+                        ${h.items.map(item => `<div class="text-xs text-slate-300 flex items-center gap-2"><i class="fas fa-check text-[8px] text-emerald-500"></i> ${item}</div>`).join('')}
+                    </div>
+                </div>`).join('');
+        }
+
+        function clearHistory() { if(confirm("Clear all history?")) { state.history = []; saveState(); renderHistoryList(); } }
+
+        function saveState() {
+            localStorage.setItem('ssc26_prog', JSON.stringify(state.progress));
+            localStorage.setItem('ssc26_chaps', JSON.stringify(state.chapters));
+            localStorage.setItem('ssc26_tasks', JSON.stringify(state.tasks));
+            localStorage.setItem('ssc26_subs', JSON.stringify(state.subs));
+            localStorage.setItem('ssc26_history', JSON.stringify(state.history));
+            localStorage.setItem('ssc26_lastReset', state.lastResetDate);
+        }
+
+        function deleteChap(id) {
+            if(confirm('Delete chapter?')) {
+                state.chapters[activeSub] = state.chapters[activeSub].filter(c => c.id !== id);
+                saveState(); renderChapters(); updateAllStats();
+            }
+        }
+    </script>
+</body>
+</html>
+
