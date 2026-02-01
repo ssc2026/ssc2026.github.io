@@ -194,7 +194,7 @@
     <!-- Modals -->
     <div id="nameModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950 px-4 hidden">
         <div class="glass-card p-8 w-full max-w-sm text-center border-sky-500/20 shadow-2xl shadow-sky-500/10">
-            <h2 class="text-2xl font-bold mb-2">SSC26 Prep</h2>
+            <h2 class="text-2xl font-bold mb-2">SSC26 Preparation</h2>
             <p class="text-slate-500 text-xs mb-8">Set your name to begin the journey</p>
             <input type="text" id="nameIn" placeholder="Enter your name" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 outline-none text-white focus:border-sky-500 transition-all">
             <button onclick="saveName()" class="w-full bg-sky-500 py-4 rounded-xl font-bold text-white shadow-xl shadow-sky-500/20 active:scale-95 transition-all">Get Started</button>
@@ -327,6 +327,143 @@
         }
 
         function renderSubOptions() {
+            document.getElementById('subOptions').innerHTML = Object.keys(SUBJECT_DATA).map(s => `
+                <button onclick="toggleSubSelection('${s}')" class="p-3 text-[10px] rounded-xl border mb-2 w-full transition-all ${state.subs.includes(s) ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-900 border-slate-800 text-slate-500'}">${s}</button>
+            `).join('');
+        }
+
+        function toggleSubSelection(s) {
+            if(state.subs.includes(s)) state.subs = state.subs.filter(x => x !== s);
+            else state.subs.push(s);
+            saveState(); renderSubOptions();
+        }
+
+        function renderSubGrid() {
+            const g = document.getElementById('subjectGrid');
+            if(state.subs.length === 0) { g.innerHTML = `<div class="col-span-2 text-center py-12 text-slate-500">No subjects selected.</div>`; return; }
+            g.innerHTML = state.subs.map(s => `
+                <div onclick="openSubject('${s}')" class="glass-card p-5 text-center cursor-pointer transition-all active:scale-95 border-sky-500/10">
+                    <div class="sub-icon-box"><i class="${SUBJECT_DATA[s].icon}"></i></div>
+                    <div class="text-[9px] font-bold text-slate-100 uppercase tracking-widest">${s}</div>
+                </div>
+            `).join('');
+        }
+
+        let activeSub = '';
+        function openSubject(s) {
+            activeSub = s;
+            document.getElementById('subjectListView').classList.add('hidden');
+            document.getElementById('chapterListView').classList.remove('hidden');
+            document.getElementById('currentSubjectTitle').innerText = s;
+            renderChapters();
+        }
+
+        function backToSubjects() { document.getElementById('subjectListView').classList.remove('hidden'); document.getElementById('chapterListView').classList.add('hidden'); updateAllStats(); }
+
+        function renderChapters() {
+            const container = document.getElementById('chapterAccordion');
+            const chaps = state.chapters[activeSub] || [];
+            if(chaps.length === 0) { container.innerHTML = `<div class="text-center p-8 text-slate-600">No chapters.</div>`; return; }
+            
+            container.innerHTML = chaps.map(c => {
+                const prog = state.progress[`${activeSub}_${c.id}`] || { basics: false, mcq: false, boards: {} };
+                const bKeys = Object.keys(prog.boards || {});
+                let mcqLabel = (activeSub === "English 1st") ? "Question Answering" : "MCQ Solve";
+                let showMcqRow = activeSub !== "English 2nd";
+
+                return `
+                <div class="glass-card overflow-hidden border-sky-500/10 mb-4">
+                    <div class="p-4 bg-slate-900/50 flex justify-between items-center border-b border-slate-800">
+                        <span class="font-bold text-sm text-sky-100">${c.title}</span>
+                        <button onclick="deleteChap(${c.id})" class="text-slate-600 hover:text-red-400 transition-colors"><i class="fas fa-trash-alt text-[10px]"></i></button>
+                    </div>
+                    <div class="p-4 space-y-4">
+                        <div class="flex items-center justify-between text-xs text-slate-400">
+                            <span>Basics / Concept</span>
+                            <div onclick="toggleStep(${c.id}, 'basics')" class="w-6 h-6 rounded-lg border-2 border-sky-500/30 flex items-center justify-center cursor-pointer transition-all ${prog.basics ? 'bg-sky-500 border-sky-500 shadow-lg shadow-sky-500/20' : 'bg-slate-900'}">${prog.basics?'<i class="fas fa-check text-[10px] text-white"></i>':''}</div>
+                        </div>
+                        ${showMcqRow ? `<div class="flex items-center justify-between text-xs text-slate-400"><span>${mcqLabel}</span><div onclick="toggleStep(${c.id}, 'mcq')" class="w-6 h-6 rounded-lg border-2 border-sky-500/30 flex items-center justify-center cursor-pointer transition-all ${prog.mcq ? 'bg-sky-500 border-sky-500 shadow-lg shadow-sky-500/20' : 'bg-slate-900'}">${prog.mcq?'<i class="fas fa-check text-[10px] text-white"></i>':''}</div></div>` : ''}
+                        <div class="pt-2 border-t border-slate-800/50">
+                            <div class="flex justify-between items-center mb-3">
+                                <span class="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Board CQ Tracker</span>
+                                <button onclick="openBoardSelector(${c.id})" class="bg-sky-500/10 text-sky-400 px-3 py-1.5 rounded-lg text-[9px] font-bold border border-sky-500/20">
+                                    <i class="fas fa-plus mr-1"></i>Add Board
+                                </button>
+                            </div>
+                            <div class="flex flex-wrap gap-2">${bKeys.map(b => `<div onclick="toggleBoardComp(${c.id}, '${b}')" class="board-chip px-3 py-1.5 rounded-lg text-[9px] font-bold ${prog.boards[b]?'completed':''}">${b}</div>`).join('')}</div>
+                        </div>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        let activeChapId = null;
+        function openBoardSelector(cid) { activeChapId = cid; renderBoardYearGrid(); document.getElementById('boardSelectorModal').classList.remove('hidden'); }
+        function renderBoardYearGrid() {
+            const prog = state.progress[`${activeSub}_${activeChapId}`] || { boards: {} };
+            document.getElementById('boardYearGrid').innerHTML = AUTO_BOARDS.map(y => `
+                <button onclick="toggleBoardSelection(${activeChapId}, '${y}')" class="p-2.5 rounded-xl text-[9px] font-bold border transition-all ${prog.boards[y]!==undefined?'bg-sky-500/20 border-sky-500 text-sky-400':'bg-slate-900 border-slate-800 text-slate-500'}">${y}</button>
+            `).join('');
+        }
+        function toggleBoardSelection(cid, b) {
+            const k = `${activeSub}_${cid}`; if(!state.progress[k]) state.progress[k] = { basics: false, mcq: false, boards: {} };
+            if(state.progress[k].boards[b] !== undefined) delete state.progress[k].boards[b]; else state.progress[k].boards[b] = false;
+            saveState(); renderBoardYearGrid(); renderChapters();
+        }
+        function closeBoardSelector() { document.getElementById('boardSelectorModal').classList.add('hidden'); updateAllStats(); }
+        function toggleBoardComp(cid, b) { state.progress[`${activeSub}_${cid}`].boards[b] = !state.progress[`${activeSub}_${cid}`].boards[b]; saveState(); renderChapters(); updateAllStats(); }
+        function toggleStep(cid, t) { const k = `${activeSub}_${cid}`; if(!state.progress[k]) state.progress[k] = { basics: false, mcq: false, boards: {} }; state.progress[k][t] = !state.progress[k][t]; saveState(); renderChapters(); updateAllStats(); }
+
+        function updateAllStats() {
+            let totalP = 0, totalD = 0;
+            const subList = document.getElementById('dashboardSubjectList'); subList.innerHTML = '';
+            state.subs.forEach(s => {
+                let sP = 0, sD = 0;
+                (state.chapters[s] || []).forEach(c => {
+                    const p = state.progress[`${s}_${c.id}`] || { basics: false, mcq: false, boards: {} };
+                    const boardsCount = Object.keys(p.boards || {}).length;
+                    let basePoints = (s === "English 2nd") ? 1 : 2; 
+                    sP += (basePoints + boardsCount);
+                    if(p.basics) sD++; 
+                    if(s !== "English 2nd" && p.mcq) sD++;
+                    Object.values(p.boards || {}).forEach(v => { if(v) sD++; });
+                });
+                totalP += sP; totalD += sD;
+                const perc = sP > 0 ? Math.round((sD/sP)*100) : 0;
+                subList.innerHTML += `<div class="glass-card p-4 flex items-center justify-between border-sky-500/5"><div class="flex items-center gap-3"><i class="${SUBJECT_DATA[s].icon} text-sky-400 text-xs"></i><span class="text-[10px] font-bold text-slate-400 uppercase tracking-tighter">${s}</span></div><div class="flex items-center gap-3"><span class="text-[10px] font-black text-sky-400">${perc}%</span><div class="w-16 h-1 bg-slate-900 rounded-full overflow-hidden"><div class="bg-sky-500 h-full transition-all" style="width:${perc}%"></div></div></div></div>`;
+            });
+            const ov = totalP > 0 ? Math.round((totalD/totalP)*100) : 0;
+            document.getElementById('overallText').innerText = ov + '%';
+            document.getElementById('overallCircle').style.strokeDashoffset = 213.6 - (ov/100)*213.6;
+            const td = state.tasks.filter(x => x.done).length, tp = state.tasks.length > 0 ? Math.round((td/state.tasks.length)*100) : 0;
+            document.getElementById('taskText').innerText = tp + '%';
+            document.getElementById('taskCircle').style.strokeDashoffset = 213.6 - (tp/100)*213.6;
+        }
+
+        function addTask() { const v = document.getElementById('taskInput').value.trim(); if(v) { state.tasks.push({ id: Date.now(), text: v, done: false }); document.getElementById('taskInput').value = ''; saveState(); renderTaskList(); updateAllStats(); } }
+        function toggleTask(id) { const t = state.tasks.find(x => x.id === id); if(t) t.done = !t.done; saveState(); renderTaskList(); updateAllStats(); }
+        function deleteTask(id) { state.tasks = state.tasks.filter(t => t.id !== id); saveState(); renderTaskList(); updateAllStats(); }
+        function renderTaskList() {
+            const c = document.getElementById('taskList');
+            if(state.tasks.length === 0) c.innerHTML = '<div class="text-center p-8 text-slate-600 text-xs italic">Set your goals for the day.</div>';
+            else c.innerHTML = state.tasks.map(t => `<div class="glass-card p-4 flex justify-between items-center border-emerald-500/10"><div onclick="toggleTask(${t.id})" class="flex items-center gap-3 cursor-pointer"><div class="w-5 h-5 rounded-lg border-2 border-emerald-500/30 flex items-center justify-center transition-all ${t.done?'bg-emerald-500 border-emerald-500 shadow-lg shadow-emerald-500/20':''}">${t.done?'<i class="fas fa-check text-[8px] text-white"></i>':''}</div><span class="text-sm ${t.done?'line-through text-slate-600':''} transition-all">${t.text}</span></div><button onclick="deleteTask(${t.id})" class="text-slate-700 hover:text-red-400 transition-colors"><i class="fas fa-trash text-xs"></i></button></div>`).join('');
+        }
+        function renderHistoryList() {
+            const c = document.getElementById('historyGoalView');
+            if(state.history.length === 0) c.innerHTML = '<div class="text-center p-8 text-slate-600 text-xs italic">No history yet.</div>';
+            else c.innerHTML = state.history.map(h => `<div class="glass-card p-4 border-l-4 border-sky-500 mb-3"><div class="text-[8px] font-bold text-sky-400 uppercase mb-2 tracking-widest">${h.date}</div><div class="space-y-1">${h.items.map(i => `<div class="text-xs text-slate-400 flex items-center gap-2"><i class="fas fa-check-circle text-[10px] text-sky-500/50"></i>${i}</div>`).join('')}</div></div>`).join('');
+        }
+        function saveState() {
+            localStorage.setItem('ssc26_prog', JSON.stringify(state.progress)); localStorage.setItem('ssc26_chaps', JSON.stringify(state.chapters));
+            localStorage.setItem('ssc26_tasks', JSON.stringify(state.tasks)); localStorage.setItem('ssc26_subs', JSON.stringify(state.subs));
+            localStorage.setItem('ssc26_history', JSON.stringify(state.history)); localStorage.setItem('ssc26_lastReset', state.lastResetDate);
+        }
+        function addNewChapter() { const t = prompt("Chapter Title:"); if(t) { if(!state.chapters[activeSub]) state.chapters[activeSub] = []; state.chapters[activeSub].push({id: Date.now(), title: t}); saveState(); renderChapters(); } }
+        function deleteChap(id) { if(confirm('Delete chapter?')) { state.chapters[activeSub] = state.chapters[activeSub].filter(c => c.id !== id); saveState(); renderChapters(); updateAllStats(); } }
+    </script>
+</body>
+</html>
+
             document.getElementById('subOptions').innerHTML = Object.keys(SUBJECT_DATA).map(s => `
                 <button onclick="toggleSubSelection('${s}')" class="p-3 text-[10px] rounded-xl border mb-2 w-full transition-all ${state.subs.includes(s) ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-900 border-slate-800 text-slate-500'}">${s}</button>
             `).join('');
