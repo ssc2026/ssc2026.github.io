@@ -194,7 +194,7 @@
     <!-- Modals -->
     <div id="nameModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950 px-4 hidden">
         <div class="glass-card p-8 w-full max-w-sm text-center border-sky-500/20 shadow-2xl shadow-sky-500/10">
-            <h2 class="text-2xl font-bold mb-2">SSC26 Preparation</h2>
+            <h2 class="text-2xl font-bold mb-2">SSC26 Prep</h2>
             <p class="text-slate-500 text-xs mb-8">Set your name to begin the journey</p>
             <input type="text" id="nameIn" placeholder="Enter your name" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 outline-none text-white focus:border-sky-500 transition-all">
             <button onclick="saveName()" class="w-full bg-sky-500 py-4 rounded-xl font-bold text-white shadow-xl shadow-sky-500/20 active:scale-95 transition-all">Get Started</button>
@@ -462,8 +462,335 @@
         function deleteChap(id) { if(confirm('Delete chapter?')) { state.chapters[activeSub] = state.chapters[activeSub].filter(c => c.id !== id); saveState(); renderChapters(); updateAllStats(); } }
     </script>
 </body>
-</html>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSC26 Preparation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #020617;
+            color: #f1f5f9;
+        }
 
+        .glass-card {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(56, 189, 248, 0.1);
+            border-radius: 1.25rem;
+        }
+
+        .nav-active { color: #38bdf8; transform: translateY(-3px); text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
+        .page-section { display: none; }
+        .page-section.active { display: block; animation: slideUp 0.3s ease-out; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .board-chip {
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #64748b;
+        }
+        .board-chip.completed {
+            background: #0ea5e9 !important;
+            color: white !important;
+            border-color: #0ea5e9 !important;
+            box-shadow: 0 0 12px rgba(14, 165, 233, 0.4);
+        }
+
+        .progress-ring {
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+
+        .sub-icon-box {
+            width: 52px;
+            height: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(56, 189, 248, 0.1);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            border-radius: 16px;
+            margin: 0 auto 12px;
+            color: #38bdf8;
+        }
+
+        .back-btn-premium {
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(56, 189, 248, 0.2);
+            backdrop-filter: blur(8px);
+            transition: all 0.3s;
+        }
+        .back-btn-premium:active { transform: scale(0.95); background: rgba(56, 189, 248, 0.1); }
+
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen pb-28 text-slate-200">
+
+    <!-- Telegram Popup -->
+    <div id="telegramPopup" class="fixed inset-0 z-[200] flex items-center justify-center bg-slate-950/80 backdrop-blur-md px-6">
+        <div class="glass-card p-8 w-full max-w-sm text-center border-sky-500/30">
+            <div class="w-16 h-16 bg-sky-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-sky-500/40">
+                <i class="fab fa-telegram-plane text-3xl text-sky-400"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white mb-2">SB Focus Elite</h2>
+            <p class="text-slate-400 text-xs mb-8">Join for SSC 2026 exclusive notes & guidelines!</p>
+            <div class="space-y-3">
+                <a href="https://t.me/SB_Focus" target="_blank" onclick="closeTelegramPopup()" class="block w-full bg-sky-500 py-3.5 rounded-xl font-bold text-white shadow-lg shadow-sky-500/20">Join Channel</a>
+                <button onclick="closeTelegramPopup()" class="w-full py-2 text-slate-500 text-[10px] font-bold uppercase tracking-widest">Dismiss</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Timer Header -->
+    <div class="sticky top-0 z-50 p-4 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800">
+        <div class="max-w-7xl mx-auto text-center">
+            <p class="text-[9px] uppercase tracking-[0.3em] text-sky-500 font-bold mb-2">Mission SSC 2026</p>
+            <div id="timer" class="flex justify-center gap-4">
+                <div class="text-center"><span id="days" class="text-xl font-black block text-white">00</span><span class="text-[7px] text-slate-500 uppercase">Days</span></div>
+                <div class="text-center"><span id="hours" class="text-xl font-black block text-white">00</span><span class="text-[7px] text-slate-500 uppercase">Hours</span></div>
+                <div class="text-center"><span id="mins" class="text-xl font-black block text-white">00</span><span class="text-[7px] text-slate-500 uppercase">Mins</span></div>
+                <div class="text-center"><span id="secs" class="text-xl font-black block text-sky-400">00</span><span class="text-[7px] text-slate-500 uppercase">Secs</span></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-xl mx-auto px-6 mt-6">
+        
+        <!-- DASHBOARD -->
+        <section id="progressPage" class="page-section active">
+            <div class="mb-8">
+                <h2 class="text-2xl font-extrabold">Hello, <span id="displayUserName" class="text-sky-400">Student</span></h2>
+                <p class="text-slate-400 text-xs">Tracking your progress to excellence</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-8">
+                <div class="glass-card p-5 flex flex-col items-center">
+                    <div class="relative w-20 h-20 mb-3">
+                        <svg class="w-full h-full">
+                            <circle cx="40" cy="40" r="34" stroke="#1e293b" stroke-width="5" fill="transparent" />
+                            <circle id="overallCircle" cx="40" cy="40" r="34" stroke="#0ea5e9" stroke-width="5" fill="transparent" stroke-dasharray="213.6" stroke-dashoffset="213.6" class="progress-ring" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-white" id="overallText">0%</div>
+                    </div>
+                    <span class="text-[9px] uppercase font-bold text-slate-500">Overall</span>
+                </div>
+                <div class="glass-card p-5 flex flex-col items-center">
+                    <div class="relative w-20 h-20 mb-3">
+                        <svg class="w-full h-full">
+                            <circle cx="40" cy="40" r="34" stroke="#1e293b" stroke-width="5" fill="transparent" />
+                            <circle id="taskCircle" cx="40" cy="40" r="34" stroke="#10b981" stroke-width="5" fill="transparent" stroke-dasharray="213.6" stroke-dashoffset="213.6" class="progress-ring" />
+                        </svg>
+                        <div class="absolute inset-0 flex items-center justify-center font-bold text-sm text-white" id="taskText">0%</div>
+                    </div>
+                    <span class="text-[9px] uppercase font-bold text-slate-500">Daily Goals</span>
+                </div>
+            </div>
+
+            <div id="dashboardSubjectList" class="space-y-3"></div>
+        </section>
+
+        <!-- SYLLABUS -->
+        <section id="completedPage" class="page-section">
+            <div id="subjectListView">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-lg font-bold">Syllabus Tracker</h2>
+                    <button onclick="toggleSubjectModal()" class="text-sky-400 text-xs font-bold border border-sky-500/30 px-3 py-1.5 rounded-xl">Edit Subjects</button>
+                </div>
+                <div id="subjectGrid" class="grid grid-cols-2 gap-4"></div>
+            </div>
+
+            <div id="chapterListView" class="hidden">
+                <div class="flex items-center gap-4 mb-6">
+                    <button onclick="backToSubjects()" class="back-btn-premium w-10 h-10 rounded-xl flex items-center justify-center text-sky-400 shadow-lg">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <div>
+                        <h2 id="currentSubjectTitle" class="text-lg font-bold text-white leading-tight"></h2>
+                        <p class="text-[10px] text-slate-500 uppercase font-bold tracking-widest">Chapter Management</p>
+                    </div>
+                </div>
+                <div class="flex justify-end mb-4">
+                    <button onclick="addNewChapter()" class="bg-sky-500/10 text-sky-400 px-4 py-2 rounded-xl text-xs font-bold border border-sky-500/20">
+                        <i class="fas fa-plus mr-2"></i>Add Chapter
+                    </button>
+                </div>
+                <div id="chapterAccordion" class="space-y-4"></div>
+            </div>
+        </section>
+
+        <!-- GOALS -->
+        <section id="dailyPage" class="page-section">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-lg font-bold">Daily Goals</h2>
+                <div class="flex bg-slate-900 p-1 rounded-xl">
+                    <button onclick="toggleGoalView('active')" id="btn-active-goals" class="px-4 py-1.5 text-[10px] font-bold rounded-lg bg-sky-500 text-white transition-all">Active</button>
+                    <button onclick="toggleGoalView('history')" id="btn-history-goals" class="px-4 py-1.5 text-[10px] font-bold rounded-lg text-slate-500 transition-all">History</button>
+                </div>
+            </div>
+            <div id="activeGoalView">
+                <div class="glass-card p-4 mb-6 flex gap-2 border-sky-500/20">
+                    <input type="text" id="taskInput" placeholder="Add a new goal..." class="flex-1 bg-transparent border-none outline-none text-sm px-2">
+                    <button onclick="addTask()" class="bg-sky-500 w-10 h-10 rounded-xl flex items-center justify-center text-white"><i class="fas fa-plus"></i></button>
+                </div>
+                <div id="taskList" class="space-y-3"></div>
+            </div>
+            <div id="historyGoalView" class="hidden space-y-3"></div>
+        </section>
+    </div>
+
+    <!-- Modals -->
+    <div id="nameModal" class="fixed inset-0 z-[150] flex items-center justify-center bg-slate-950 px-4 hidden">
+        <div class="glass-card p-8 w-full max-w-sm text-center border-sky-500/20 shadow-2xl shadow-sky-500/10">
+            <h2 class="text-2xl font-bold mb-2">SSC26 Preparation</h2>
+            <p class="text-slate-500 text-xs mb-8">Set your name to begin the journey</p>
+            <input type="text" id="nameIn" placeholder="Enter your name" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-4 mb-6 outline-none text-white focus:border-sky-500 transition-all">
+            <button onclick="saveName()" class="w-full bg-sky-500 py-4 rounded-xl font-bold text-white shadow-xl shadow-sky-500/20 active:scale-95 transition-all">Get Started</button>
+        </div>
+    </div>
+
+    <div id="subSelectModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm px-4 hidden">
+        <div class="glass-card p-6 w-full max-w-sm">
+            <h2 class="text-lg font-bold mb-4">Select Subjects</h2>
+            <div id="subOptions" class="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto"></div>
+            <button onclick="toggleSubjectModal()" class="w-full mt-6 bg-sky-500 py-3 rounded-xl text-sm font-bold text-white">Save Changes</button>
+        </div>
+    </div>
+
+    <div id="boardSelectorModal" class="fixed inset-0 z-[110] flex items-center justify-center bg-black/90 backdrop-blur-md px-4 hidden">
+        <div class="glass-card p-6 w-full max-w-sm border-sky-500/30">
+            <h3 class="font-bold mb-2 text-center">Board Question Tracker</h3>
+            <p class="text-[10px] text-center text-slate-500 mb-6 uppercase tracking-widest">Select relevant years</p>
+            <div id="boardYearGrid" class="grid grid-cols-3 gap-3 mb-6"></div>
+            <button onclick="closeBoardSelector()" class="w-full bg-slate-800 py-3.5 rounded-xl font-bold text-xs uppercase tracking-widest border border-slate-700">Done</button>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-slate-950/80 backdrop-blur-xl border-t border-slate-800 p-4 flex justify-around items-center z-50">
+        <button onclick="switchTab('progress')" id="btn-progress" class="nav-active flex flex-col items-center"><i class="fas fa-home text-lg"></i><span class="text-[7px] mt-1 font-bold uppercase tracking-widest">Dashboard</span></button>
+        <button onclick="switchTab('completed')" id="btn-completed" class="flex flex-col items-center"><i class="fas fa-book-open text-lg"></i><span class="text-[7px] mt-1 font-bold uppercase tracking-widest">Syllabus</span></button>
+        <button onclick="switchTab('daily')" id="btn-daily" class="flex flex-col items-center"><i class="fas fa-check-double text-lg"></i><span class="text-[7px] mt-1 font-bold uppercase tracking-widest">Goals</span></button>
+    </nav>
+
+    <script>
+        const EXAM_DATE = new Date("April 21, 2026 10:00:00").getTime();
+        
+        const SUBJECT_DATA = {
+            "Physics": { icon: "fas fa-atom" }, "Chemistry": { icon: "fas fa-flask" },
+            "Higher Math": { icon: "fas fa-infinity" }, "Biology": { icon: "fas fa-leaf" },
+            "BGS": { icon: "fas fa-globe" }, "General Math": { icon: "fas fa-calculator" },
+            "Religion": { icon: "fas fa-star-and-crescent" }, "ICT": { icon: "fas fa-laptop-code" },
+            "Bangla 1st": { icon: "fas fa-pen-fancy" }, "Bangla 2nd": { icon: "fas fa-language" },
+            "English 1st": { icon: "fas fa-font" }, "English 2nd": { icon: "fas fa-spell-check" }
+        };
+
+        const INITIAL_CHAPTERS = {
+            "Physics": [{id: 1, title: "অধ্যায় ১: ভৌত রাশি ও পরিমাপ"}, {id: 2, title: "অধ্যায় ২: গতি"}, {id: 3, title: "অধ্যায় ৩: বল"}, {id: 4, title: "অধ্যায় ৪: কাজ, ক্ষমতা ও শক্তি"}, {id: 5, title: "অধ্যায় ৫: চাপ ও চাপের প্রভাব"}, {id: 6, title: "অধ্যায় ৬: আলোর প্রতিফলন"}, {id: 7, title: "অধ্যায় ১০: স্থির বিদ্যুৎ"}],
+            "Chemistry": [{id: 8, title: "অধ্যায় ৩: পদার্থের গঠন"}, {id: 9, title: "অধ্যায় ৪: পর্যায় সারণি"}, {id: 10, title: "অধ্যায় ৫: রাসায়নিক বন্ধন"}, {id: 11, title: "অধ্যায় ৬: মোলের ধারণা ও রাসায়নিক গণনা"}, {id: 12, title: "অধ্যায় ৭: রাসায়নিক বিক্রিয়া"}, {id: 13, title: "অধ্যায় ১১: খনিজ সম্পদ ও জীবাশ্ম"}],
+            "Higher Math": [{id: 14, title: "অধ্যায় ২: বীজগাণিতিক রাশি"}, {id: 15, title: "অধ্যায় ৭: অসীম ধারা"}, {id: 16, title: "অধ্যায় ৮: ত্রিকোণমিতি"}, {id: 17, title: "অধ্যায় ৯: সূচকীয় ও লগারিদমীয় ফাংশন"}, {id: 18, title: "অধ্যায় ১০: দ্বিপদী বিস্তৃতি"}, {id: 19, title: "অধ্যায় ১১: স্থানাঙ্ক জ্যামিতি"}, {id: 20, title: "অধ্যায় ১২: সমতলীয় ভেক্টর"}, {id: 21, title: "অধ্যায় ১৪: সম্ভাব্যতা"}],
+            "Biology": [{id: 22, title: "অধ্যায় ১: জীবন পাঠ"}, {id: 23, title: "অধ্যায় ২: জীবকোষ ও টিস্যু"}, {id: 24, title: "অধ্যায় ৩: কোষ বিভাজন"}, {id: 25, title: "অধ্যায় ৪: জীবনীশক্তি"}, {id: 26, title: "অধ্যায় ১১: জীবের প্রজনন"}, {id: 27, title: "অধ্যায় ১২: জীবের বংশগতি ও জৈব অভিব্যাক্তি"}, {id: 28, title: "অধ্যায় ১৩: জীবের পরিবর্তন"}],
+            "BGS": [{id: 29, title: "অধ্যায় ২: বাংলাদেশের স্বাধীনতা"}, {id: 30, title: "অধ্যায় ৩: সৌরজগৎ ও ভূমন্ডল"}, {id: 31, title: "অধ্যায় ৬: রাষ্ট্র, নাগরিকতা ও আইন"}, {id: 32, title: "অধ্যায় ১০: জাতীয় সম্পদ ও অর্থনৈতিক ব্যবস্থা"}, {id: 33, title: "অধ্যায় ১১: অর্থনৈতিক নির্দেশকসমূহ ও বাংলাদেশের অর্থনীতির প্রকৃতি"}, {id: 34, title: "অধ্যায় ১৩: বাংলাদেশের পরিবার কাঠামো ও সামাজিকীকরণ"}],
+            "General Math": [{id: 35, title: "অধ্যায় ২: সেট ও ফাংশন"}, {id: 36, title: "অধ্যায় ৩: বীজগাণিতিক রাশি"}, {id: 37, title: "অধ্যায় ৭: ব্যবহারিক জ্যামিতি"}, {id: 38, title: "অধ্যায় ৮: বৃত্ত"}, {id: 39, title: "অধ্যায় ৯: ত্রিকোণমিতিক অনুপাত"}, {id: 40, title: "অধ্যায় ১১: বীজগাণিতিক অনুপাত ও সমানুপাত"}, {id: 41, title: "অধ্যায় ১৬: পরিমিতি"}, {id: 42, title: "অধ্যায় ১৭: পরিসংখ্যান"}],
+            "Religion": [{id: 43, title: "অধ্যায় ১: আকাইদ ও নৈতিক জীবন"}, {id: 44, title: "অধ্যায় ২: শরিয়তের উৎস"}, {id: 45, title: "অধ্যায় ৩: ইবাদত"}, {id: 46, title: "অধ্যায় ৪: আখলাক"}, {id: 47, title: "অধ্যায় ৫: আদর্শ জীবনচরিত"}],
+            "ICT": [{id: 48, title: "অধ্যায় ২: কম্পিউটার রক্ষণাবেক্ষণ ও সাইবার নিরাপত্তা"}, {id: 49, title: "অধ্যায় ৪: আমার লেখালেখি ও হিসাব"}, {id: 50, title: "অধ্যায় ৫: মাল্টিমিডিয়া ও গ্রাফিক্স"}, {id: 51, title: "অধ্যায় ৬: প্রোগ্রামিংয়ের মাধ্যমে সমস্যার সমাধান"}],
+            "Bangla 1st": [{id: 52, title: "গদ্য: প্রত্যুপকার"}, {id: 53, title: "গদ্য: সুভা"}, {id: 54, title: "গদ্য: বই পড়া"}, {id: 55, title: "গদ্য: আঁম আঁটি ভেঁপু"}, {id: 56, title: "গদ্য: মানুষ মোহাম্মদ (স.)"}, {id: 57, title: "গদ্য: নিগাছ"}, {id: 58, title: "গদ্য: শিক্ষা ও মনুষ্যত্ব"}, {id: 59, title: "গদ্য: প্রবাস বন্ধু"}, {id: 60, title: "গদ্য: একুশে গল্প"}, {id: 61, title: "কবিতা: কপোতাক্ষ নদ"}, {id: 62, title: "কবিতা: জীবন বিনিময়"}, {id: 63, title: "কবিতা: উমর ফারুক"}, {id: 64, title: "কবিতা: সেই দিন এই মাঠ"}, {id: 65, title: "কবিতা: বৃষ্টি"}, {id: 66, title: "কবিতা: আমি কোনো আগন্তুক নই"}, {id: 67, title: "কবিতা: তোমাকে পাওয়ার জন্য হে স্বাধীনতা"}, {id: 68, title: "উপন্যাস: ১৯৭১"}],
+            "Bangla 2nd": [{id: 69, title: "পরিচ্ছেদ ৫-১০"}, {id: 70, title: "পরিচ্ছেদ ১১-১২"}, {id: 71, title: "পরিচ্ছেদ ১৭-১৮"}, {id: 72, title: "পরিচ্ছেদ ১৯-২২"}, {id: 73, title: "পরিচ্ছেদ ২৩-২৫"}, {id: 74, title: "পরিচ্ছেদ ৩১-৩৪"}, {id: 75, title: "পরিচ্ছেদ ৩৯-৪৩"}],
+            "English 1st": [{id: 76, title: "Unit 1: Lesson 1,3"}, {id: 77, title: "Unit 2: Lesson 1-5"}, {id: 78, title: "Unit 3: Lesson 1-5"}, {id: 79, title: "Unit 6: Lesson 1-5"}, {id: 80, title: "Unit 10: Lesson 1-4"}, {id: 81, title: "Unit 11: Lesson 1-11"}, {id: 82, title: "Unit 13: Lesson 1-3"}, {id: 83, title: "Unit 16"}],
+            "English 2nd": [{id: 84, title: "Gap filling with clues"}, {id: 85, title: "Substitution table"}, {id: 86, title: "Right form of verbs"}, {id: 87, title: "Changing sentence"}, {id: 88, title: "Tag question"}, {id: 89, title: "Suffix & prefixes"}, {id: 90, title: "Preposition"}, {id: 91, title: "Connectors"}, {id: 92, title: "Punctuation"}]
+        };
+
+        const AUTO_BOARDS = ["SSC 16", "SSC 17", "SSC 18", "SSC 19", "SSC 20", "SSC 21", "SSC 22", "SSC 23", "SSC 24", "SSC 25"];
+
+        let state = {
+            name: localStorage.getItem('ssc26_name'),
+            subs: JSON.parse(localStorage.getItem('ssc26_subs')) || Object.keys(SUBJECT_DATA),
+            chapters: JSON.parse(localStorage.getItem('ssc26_chaps')) || INITIAL_CHAPTERS,
+            progress: JSON.parse(localStorage.getItem('ssc26_prog')) || {},
+            tasks: JSON.parse(localStorage.getItem('ssc26_tasks')) || [],
+            history: JSON.parse(localStorage.getItem('ssc26_history')) || [],
+            lastResetDate: localStorage.getItem('ssc26_lastReset') || ""
+        };
+
+        window.onload = () => {
+            checkMidnightReset();
+            if(!state.name) document.getElementById('nameModal').classList.remove('hidden');
+            else { document.getElementById('displayUserName').innerText = state.name; init(); }
+            startTimer();
+        };
+
+        function closeTelegramPopup() { document.getElementById('telegramPopup').style.display = 'none'; }
+
+        function checkMidnightReset() {
+            const today = new Date().toLocaleDateString();
+            if (state.lastResetDate !== today && state.lastResetDate !== "") {
+                const completed = state.tasks.filter(t => t.done);
+                if(completed.length > 0) state.history.unshift({ date: state.lastResetDate, items: completed.map(c => c.text) });
+                state.tasks = state.tasks.filter(t => !t.done);
+                state.lastResetDate = today;
+                saveState();
+            } else if (state.lastResetDate === "") { state.lastResetDate = today; saveState(); }
+        }
+
+        function saveName() {
+            const n = document.getElementById('nameIn').value.trim();
+            if(n) { state.name = n; localStorage.setItem('ssc26_name', n); document.getElementById('nameModal').classList.add('hidden'); document.getElementById('displayUserName').innerText = n; init(); }
+        }
+
+        function init() { renderSubGrid(); renderTaskList(); updateAllStats(); }
+
+        function startTimer() {
+            const updateTimer = () => {
+                const diff = EXAM_DATE - Date.now();
+                if (diff <= 0) return;
+                document.getElementById('days').innerText = String(Math.floor(diff / 86400000)).padStart(2, '0');
+                document.getElementById('hours').innerText = String(Math.floor((diff % 86400000) / 3600000)).padStart(2, '0');
+                document.getElementById('mins').innerText = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+                document.getElementById('secs').innerText = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+            };
+            updateTimer(); setInterval(updateTimer, 1000);
+        }
+
+        function switchTab(t) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('nav-active'));
+            document.getElementById(`${t}Page`).classList.add('active');
+            document.getElementById(`btn-${t}`).classList.add('nav-active');
+            if(t === 'progress') updateAllStats();
+            if(t === 'completed') { document.getElementById('subjectListView').classList.remove('hidden'); document.getElementById('chapterListView').classList.add('hidden'); }
+        }
+
+        function toggleGoalView(view) {
+            document.getElementById('activeGoalView').classList.toggle('hidden', view === 'history');
+            document.getElementById('historyGoalView').classList.toggle('hidden', view === 'active');
+            document.getElementById('btn-active-goals').className = `px-4 py-1.5 text-[10px] font-bold rounded-lg ${view==='active'?'bg-sky-500 text-white':'text-slate-500'}`;
+            document.getElementById('btn-history-goals').className = `px-4 py-1.5 text-[10px] font-bold rounded-lg ${view==='history'?'bg-sky-500 text-white':'text-slate-500'}`;
+            if(view === 'history') renderHistoryList();
+        }
+
+        function toggleSubjectModal() {
+            const modal = document.getElementById('subSelectModal');
+            if(modal.classList.contains('hidden')) { renderSubOptions(); modal.classList.remove('hidden'); }
+            else { modal.classList.add('hidden'); renderSubGrid(); updateAllStats(); }
+        }
+
+        function renderSubOptions() {
             document.getElementById('subOptions').innerHTML = Object.keys(SUBJECT_DATA).map(s => `
                 <button onclick="toggleSubSelection('${s}')" class="p-3 text-[10px] rounded-xl border mb-2 w-full transition-all ${state.subs.includes(s) ? 'bg-sky-500/20 border-sky-500 text-sky-400' : 'bg-slate-900 border-slate-800 text-slate-500'}">${s}</button>
             `).join('');
